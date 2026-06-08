@@ -1,7 +1,15 @@
 from pathlib import Path
 import tempfile
 import os
+import sys
 import streamlit as st
+
+sys.path.insert(0, "/mount/src/job-fit-analyzer")
+
+if "ANTHROPIC_API_KEY" in st.secrets:
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+
+from main import load_resume, get_job_result, get_gap_analysis
 
 if "ANTHROPIC_API_KEY" in st.secrets:
     os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
