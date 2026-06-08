@@ -57,7 +57,6 @@ def load_resume(path: str) -> str:
         raise ValueError(f"Unsupported file type: {suffix}. Use .docx or .pdf")
 
 
-model = ChatAnthropic(model="claude-sonnet-4-5")
 
 job_prompt_template = PromptTemplate.from_template("""
 You are a helpful job searching assistant. Your job is to read a job posting:
