@@ -179,6 +179,7 @@ st.markdown("<h1 style='font-family:Syne;font-size:2rem;margin-bottom:0'>Job Fit
 st.markdown("<p style='color:#5a5a8a;font-size:0.85rem;margin-top:0.25rem'>Upload your resume, paste a job posting, get an instant gap analysis.</p>", unsafe_allow_html=True)
 st.markdown("<hr>", unsafe_allow_html=True)
 
+
 # Resume upload row
 
 col_upload, col_status = st.columns([2, 1])

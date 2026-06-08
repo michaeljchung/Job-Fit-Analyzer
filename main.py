@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 load_dotenv()
+
 
 class SalaryRange(BaseModel):
     min_salary: int = Field(description="minimum salary")
