@@ -1,7 +1,12 @@
-import streamlit as st
 from pathlib import Path
-from main import load_resume, get_job_result, get_gap_analysis
 import tempfile
+import os
+import streamlit as st
+
+if "ANTHROPIC_API_KEY" in st.secrets:
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+
+from main import load_resume, get_job_result, get_gap_analysis
 
 # Page config
 st.set_page_config(
