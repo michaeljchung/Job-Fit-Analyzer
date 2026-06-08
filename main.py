@@ -1,11 +1,15 @@
+import os
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 from pathlib import Path
-from dotenv import load_dotenv
 
-
-load_dotenv()
+try:
+    import streamlit as st
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+except:
+    from dotenv import load_dotenv
+    load_dotenv()
 
 
 class SalaryRange(BaseModel):
