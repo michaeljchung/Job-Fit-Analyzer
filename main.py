@@ -93,8 +93,9 @@ def get_job_result(job_posting: str) -> Result | None:
     try:
         return structured_llm.invoke(prompt)
     except Exception as e:
-        print(f"Job parsing error: {e}")
-        return None
+    print(f"Job parsing error: {e}")
+    st.error(f"Job parsing error: {e}")
+    return None
 
 def get_gap_analysis(resume_text: str, job: Result) -> GapAnalysis | None:
     model = ChatAnthropic(model="claude-sonnet-4-5")
@@ -110,8 +111,9 @@ def get_gap_analysis(resume_text: str, job: Result) -> GapAnalysis | None:
     try:
         return structured_llm.invoke(prompt)
     except Exception as e:
-        print(f"Gap analysis error: {e}")
-        return None
+    print(f"Gap analysis error: {e}")
+    st.error(f"Gap analysis error: {e}")
+    return None
 
 
 if __name__ == "__main__":
