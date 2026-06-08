@@ -1,11 +1,9 @@
-# app.py
 import streamlit as st
 from pathlib import Path
 from main import load_resume, get_job_result, get_gap_analysis
 import tempfile
 
 # Page config
-
 st.set_page_config(
     page_title="Job Fit Analyzer",
     layout="wide",
