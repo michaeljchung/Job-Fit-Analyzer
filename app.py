@@ -4,15 +4,15 @@ from pathlib import Path
 from main import load_resume, get_job_result, get_gap_analysis
 import tempfile
 
-# ── Page config ──────────────────────────────────────────────────────────────
+# Page config
 
 st.set_page_config(
     page_title="Job Fit Analyzer",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# ── Styling ───────────────────────────────────────────────────────────────────
+# Styling
 
 st.markdown("""
 <style>
@@ -27,12 +27,6 @@ html, body, [class*="css"] {
 .stApp { background-color: #0a0a0f; }
 
 h1, h2, h3 { font-family: 'Syne', sans-serif !important; }
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #0f0f1a;
-    border-right: 1px solid #1e1e2e;
-}
 
 /* Cards */
 .card {
@@ -164,92 +158,78 @@ section[data-testid="stSidebar"] {
     padding: 1rem;
 }
 
+/* Hide sidebar toggle */
+[data-testid="collapsedControl"] { display: none; }
+
 /* Divider */
 hr { border-color: #1e1e2e; }
-
-/* Success/info boxes */
-.stSuccess { background-color: #0d2b1a !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Session state ─────────────────────────────────────────────────────────────
+# Session state
 
 if "resume_text" not in st.session_state:
     st.session_state.resume_text = None
-if "results_history" not in st.session_state:
-    st.session_state.results_history = []
+if "resume_name" not in st.session_state:
+    st.session_state.resume_name = None
 
-# ── Sidebar — Resume upload ───────────────────────────────────────────────────
+# Header
 
-with st.sidebar:
-    st.markdown("<div class='card-header'>Your Resume</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-family:Syne;font-size:2rem;margin-bottom:0'>Job Fit Analyzer</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color:#5a5a8a;font-size:0.85rem;margin-top:0.25rem'>Upload your resume, paste a job posting, get an instant gap analysis.</p>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
+# Resume upload row
+
+col_upload, col_status = st.columns([2, 1])
+
+with col_upload:
+    st.markdown("<div class='card-header'>Resume</div>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
         "Upload resume",
         type=["pdf", "docx"],
         label_visibility="collapsed"
     )
+    if uploaded_file and st.session_state.resume_text is None:
+        with st.spinner("Reading resume..."):
+            suffix = Path(uploaded_file.name).suffix
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(uploaded_file.read())
+                tmp_path = tmp.name
+            try:
+                st.session_state.resume_text = load_resume(tmp_path)
+                st.session_state.resume_name = uploaded_file.name
+            except Exception as e:
+                st.error(f"Failed to read resume: {e}")
 
-    if uploaded_file:
-        if st.session_state.resume_text is None:
-            with st.spinner("Reading resume..."):
-                suffix = Path(uploaded_file.name).suffix
-                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                    tmp.write(uploaded_file.read())
-                    tmp_path = tmp.name
-                try:
-                    st.session_state.resume_text = load_resume(tmp_path)
-                    st.success(f"✓ {uploaded_file.name}")
-                except Exception as e:
-                    st.error(f"Failed to read resume: {e}")
-
+with col_status:
     if st.session_state.resume_text:
         st.markdown(f"""
-        <div class='card' style='margin-top:1rem'>
+        <div class='card'>
             <div class='card-header'>Status</div>
-            <span style='color:#4ade80;font-size:0.8rem'>● Resume loaded</span><br>
+            <span style='color:#4ade80;font-size:0.8rem'>● {st.session_state.resume_name}</span><br>
             <span style='color:#5a5a8a;font-size:0.75rem'>{len(st.session_state.resume_text.split())} words extracted</span>
         </div>
         """, unsafe_allow_html=True)
-
-        if st.button("Clear Resume", use_container_width=True):
+        if st.button("Clear Resume"):
             st.session_state.resume_text = None
-            st.session_state.results_history = []
+            st.session_state.resume_name = None
             st.rerun()
 
-    st.markdown("<hr>", unsafe_allow_html=True)
-
-    if st.session_state.results_history:
-        st.markdown("<div class='card-header'>History</div>", unsafe_allow_html=True)
-        for i, entry in enumerate(reversed(st.session_state.results_history)):
-            verdict_color = {
-                "Strong Apply": "#4ade80",
-                "Apply with caveats": "#fbbf24",
-                "Skip": "#f87171"
-            }.get(entry["recommendation"], "#e8e8f0")
-            st.markdown(f"""
-            <div style='font-size:0.75rem;margin-bottom:0.5rem;padding:0.5rem;
-                        background:#12121e;border-radius:6px;border:1px solid #1e1e30'>
-                <span style='color:#e8e8f0'>{entry["title"]}</span><br>
-                <span style='color:{verdict_color};font-size:0.7rem'>{entry["recommendation"]}</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-# ── Main panel ────────────────────────────────────────────────────────────────
-
-st.markdown("<h1 style='font-family:Syne;font-size:2rem;margin-bottom:0'>Job Fit Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color:#5a5a8a;font-size:0.85rem;margin-top:0.25rem'>Paste a job posting. Get an instant gap analysis against your resume.</p>", unsafe_allow_html=True)
 st.markdown("<hr>", unsafe_allow_html=True)
+
+# Job posting input
 
 if not st.session_state.resume_text:
     st.markdown("""
     <div class='card' style='text-align:center;padding:3rem'>
         <div style='font-size:2rem;margin-bottom:1rem'>📄</div>
-        <div style='font-family:Syne;font-size:1rem;color:#e8e8f0;margin-bottom:0.5rem'>Upload your resume to get started</div>
-        <div style='color:#5a5a8a;font-size:0.8rem'>PDF or DOCX — uploaded once per session</div>
+        <div style='font-family:Syne;font-size:1rem;color:#e8e8f0;margin-bottom:0.5rem'>Upload your resume above to get started</div>
+        <div style='color:#5a5a8a;font-size:0.8rem'>PDF or DOCX — stays loaded for the session</div>
     </div>
     """, unsafe_allow_html=True)
 else:
+    st.markdown("<div class='card-header'>Job Posting</div>", unsafe_allow_html=True)
     job_posting = st.text_area(
         "Job Posting",
         height=250,
@@ -275,13 +255,9 @@ else:
                     gap = get_gap_analysis(st.session_state.resume_text, job)
 
                 if gap:
-                    # Save to history
-                    st.session_state.results_history.append({
-                        "title": job.job_title,
-                        "recommendation": gap.recommendation
-                    })
+                    st.markdown("<hr>", unsafe_allow_html=True)
 
-                    # region """Results"""
+                    # region Results
 
                     # Header row
                     col_title, col_verdict = st.columns([3, 1])
@@ -298,16 +274,18 @@ else:
 
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-                    # Job summary
-                    st.markdown("<div class='card-header' style='margin-top:1.5rem'>A Quick Look</div>",
-                                unsafe_allow_html=True)
-                    if True:
-                        st.markdown(f"**Summary:** {job.job_summary}")
-                        st.markdown(f"**Required Skills:** {', '.join(job.required_skills)}")
-                        if job.preferred_skills:
-                            st.markdown(f"**Preferred Skills:** {', '.join(job.preferred_skills)}")
-                        if job.salary_range:
-                            st.markdown(f"**Salary:** \\${job.salary_range.min_salary:,} – \\${job.salary_range.max_salary:,}")                    # Overall fit
+                    # A Quick Look
+                    st.markdown("<div class='card-header'>A Quick Look</div>", unsafe_allow_html=True)
+                    st.markdown(f"**Summary:** {job.job_summary}")
+                    st.markdown(f"**Required Skills:** {', '.join(job.required_skills)}")
+                    if job.preferred_skills:
+                        st.markdown(f"**Preferred Skills:** {', '.join(job.preferred_skills)}")
+                    if job.salary_range:
+                        st.markdown(f"**Salary:** \\${job.salary_range.min_salary:,} – \\${job.salary_range.max_salary:,}")
+
+                    st.markdown("<hr>", unsafe_allow_html=True)
+
+                    # Overall assessment
                     st.markdown(f"""
                     <div class='card'>
                         <div class='card-header'>Overall Assessment</div>
@@ -315,7 +293,7 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Three columns for match/partial/gap
+                    # Three columns
                     c1, c2, c3 = st.columns(3)
 
                     with c1:
@@ -344,6 +322,5 @@ else:
                             {tags}
                         </div>
                         """, unsafe_allow_html=True)
+
                     # endregion
-
-
