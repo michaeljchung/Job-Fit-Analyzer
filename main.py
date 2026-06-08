@@ -88,6 +88,7 @@ as if you are speaking to the candidate directly.
 """)
 
 def get_job_result(job_posting: str) -> Result | None:
+    model = ChatAnthropic(model="claude-sonnet-4-5")
     prompt = job_prompt_template.format(job_posting=job_posting)
     structured_llm = model.with_structured_output(Result)
     try:
@@ -97,6 +98,7 @@ def get_job_result(job_posting: str) -> Result | None:
         return None
 
 def get_gap_analysis(resume_text: str, job: Result) -> GapAnalysis | None:
+    model = ChatAnthropic(model="claude-sonnet-4-5")
     prompt = gap_prompt_template.format(
         resume=resume_text,
         job_title=job.job_title,
