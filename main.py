@@ -3,8 +3,11 @@ from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 from pathlib import Path
 from dotenv import load_dotenv
+import os
+import streamlit as st
 
-load_dotenv()
+if "ANTHROPIC_API_KEY" in st.secrets:
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
 
 
 class SalaryRange(BaseModel):
