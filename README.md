@@ -1,6 +1,6 @@
 # Job Fit Analyzer
 
-An AI-powered tool that analyzes your resume against job postings and identifies strengths, gaps, and partial matches — with a hiring recommendation.
+An AI-powered tool that analyzes your resume against job postings and identifies strengths, gaps, and partial matches with a hiring recommendation.
 
 ## Tech Stack
 Python · LangChain · Claude API · Streamlit
